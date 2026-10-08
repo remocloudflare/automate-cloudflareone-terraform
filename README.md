@@ -10,6 +10,7 @@
 | Question | Answer |
 | --- | --- |
 | What does it create when explicitly enabled? | MCP portal/server controls, Entra and One-time PIN identity, explicit-email Access, an App Launcher and clientless Worker app, reusable Gateway DNS/HTTP blocking, and an AI Gateway with logging, retries, DLP, and Guardrails. |
+| What does it cost? | The clientless Worker can run within the Workers Free plan limits (currently 100,000 requests per day). AI Gateway itself is currently free on all plans, including its core features and DLP scanning; model inference and Guardrails can still incur Workers AI usage charges. Zero Trust is licensed separately; confirm the target account includes the required Access, Gateway, MCP Portal, and Zero Trust DLP entitlements. |
 | What is the client endpoint? | `https://<portal_hostname>/mcp` after a successful, verified deployment. |
 | What upstreams are supported here? | Approved **public HTTPS MCP servers with `auth_type = "unauthenticated"`**. The portal and its Access apps do not make a public upstream's direct URL private. |
 | What is not included? | No private or OAuth-backed MCP upstream and no Microsoft-side Entra app registration. Terraform configures Cloudflare's Entra integration; the external Microsoft callback registration remains separate. |
@@ -32,6 +33,9 @@
 - Blocks sensitive prompts with AI Gateway **DLP** and privacy **Guardrails**.
 - Outputs the MCP Portal URL, clientless application URL, AI Gateway endpoint, and enabled MCP server IDs.
 - Supports repeatable no-change plans and an intentional full `terraform destroy` for the isolated demo stack.
+
+> [!NOTE]
+> **Plan and licensing:** The Worker portion can stay on Workers Free within its published limits, currently 100,000 requests per day. AI Gateway itself is currently free on all plans, including core features and DLP scanning. Accounts without a Zero Trust subscription receive two predefined DLP profiles; a Zero Trust subscription that includes DLP unlocks the full profile set. Guardrails use Workers AI and are billed by token-based inference, so the model calls are not necessarily free even though AI Gateway is. Cloudflare Zero Trust remains separately licensed for the Access, Gateway, MCP Portal, and broader DLP controls used by this complete demo; confirm account entitlements and commercial terms before presenting or deploying it. See [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/), [AI Gateway pricing](https://developers.cloudflare.com/ai-gateway/pricing), and [Cloudflare Zero Trust plans](https://www.cloudflare.com/plans/zero-trust-services/).
 
 ## Create and scope the API token
 
