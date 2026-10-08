@@ -1,0 +1,16 @@
+# Terraform / local / credential artifacts
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+.env
+.env.*
+.DS_Store
+
+# Local editable diagram sources; publish PNG previews only
+*.drawio
+
+# Local-only verification suite
+tests/

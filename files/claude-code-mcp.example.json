@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cloudflare-one-demo": {
+      "type": "http",
+      "url": "https://${portal_hostname}/mcp"
+    }
+  }
+}

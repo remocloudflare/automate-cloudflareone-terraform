@@ -1,0 +1,12 @@
+{
+  // OpenCode MCP client example for the portal created by this Terraform stack.
+  // Rendered by Terraform using portal_hostname from terraform.tfvars.
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "cloudflare-one-demo": {
+      "type": "remote",
+      "url": "https://${portal_hostname}/mcp",
+      "enabled": true
+    }
+  }
+}

@@ -1,0 +1,9 @@
+[
+  {
+    "id": "cloudflare-docs",
+    "name": "Cloudflare Documentation",
+    "url": "https://docs.mcp.cloudflare.com/mcp",
+    "auth_type": "unauthenticated",
+    "enabled": true
+  }
+]

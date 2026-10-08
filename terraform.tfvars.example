@@ -1,0 +1,17 @@
+# Copy to terraform.tfvars. Set identifiers for your own disposable demo account.
+# Recommended across accounts: set this token alongside the matching account_id
+# and zone_id in the gitignored terraform.tfvars. No shell export is required.
+# Alternative: leave it empty and export CLOUDFLARE_API_TOKEN in the Terraform shell.
+# A non-empty tfvars value takes precedence; do not set both.
+# Never commit the real terraform.tfvars or a saved plan containing credentials.
+cloudflare_api_token = ""
+account_id         = ""
+zone_id            = ""
+ai_gateway_id      = "terraform-cloudflare-one-demo"
+# Microsoft Entra ID app registration used by the Access applications.
+# Keep the real secret only in ignored terraform.tfvars or inject it as
+# TF_VAR_entra_client_secret from a secret manager.
+entra_client_id     = ""
+entra_client_secret = ""
+entra_directory_id  = ""
+# entra_idp_name    = "Microsoft Entra ID"
