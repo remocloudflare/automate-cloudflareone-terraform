@@ -1,0 +1,29 @@
+{
+  // Model inference uses the Terraform-managed AI Gateway plus Workers AI.
+  // Rendered by Terraform using values from terraform.tfvars.
+  // Set AI_GATEWAY_MODEL_TOKEN from a secret manager; it is not the Terraform token.
+  "$schema": "https://opencode.ai/config.json",
+  "model": "cf-workers-ai/@cf/qwen/qwen3.8-27b",
+  "provider": {
+    "cf-workers-ai": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Workers AI via Cloudflare AI Gateway (optional)",
+      "options": {
+        "baseURL": "https://gateway.ai.cloudflare.com/v1/${account_id}/${ai_gateway_id}/workers-ai/v1",
+        "apiKey": "{env:AI_GATEWAY_MODEL_TOKEN}"
+      },
+      "models": {
+        "@cf/qwen/qwen3.8-27b": {
+          "name": "Qwen 3.8 27B via Workers AI"
+        }
+      }
+    }
+  },
+  "mcp": {
+    "cloudflare-one-demo": {
+      "type": "remote",
+      "url": "https://${portal_hostname}/mcp",
+      "enabled": true
+    }
+  }
+}

@@ -1,0 +1,4 @@
+# One bare domain per line. DOMAIN lists also match subdomains.
+# Do not include schemes, paths, ports, or wildcards.
+777.com
+www2.pnwx.com
