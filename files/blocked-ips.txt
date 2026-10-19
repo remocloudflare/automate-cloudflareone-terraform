@@ -1,0 +1,4 @@
+# One IPv4/IPv6 address or CIDR per line.
+# These RFC documentation addresses are safe examples; replace them before applying.
+192.0.2.10
+2001:db8::10
