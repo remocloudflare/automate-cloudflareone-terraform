@@ -1,2 +1,2 @@
 # One email per line. Blank lines and comments are ignored.
-xxxx@itlinux.cc
+egress-user@example.com
