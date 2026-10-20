@@ -5,6 +5,7 @@
 *.tfplan
 *.tfvars
 !*.tfvars.example
+files/*.local.txt
 .env
 .env.*
 .DS_Store

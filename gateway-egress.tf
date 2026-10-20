@@ -1,5 +1,5 @@
 locals {
-  egress_email_lines = split("\n", file("${path.module}/files/egress-emails.txt"))
+  egress_email_lines = split("\n", file("${path.module}/${var.egress_emails_file}"))
   egress_emails = sort(distinct([
     for line in local.egress_email_lines : lower(trimspace(line))
     if trimspace(line) != "" && !startswith(trimspace(line), "#")
@@ -15,7 +15,7 @@ check "egress_email_entries" {
         can(regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", email))
       ])
     )
-    error_message = "files/egress-emails.txt must contain at least one valid email address, one per line."
+    error_message = "The configured egress_emails_file must contain at least one valid email address, one per line."
   }
 }
 
