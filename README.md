@@ -21,6 +21,7 @@
 - Configures **Microsoft Entra ID** and **One-time PIN** as Cloudflare Access login methods.
 - Authorizes an explicit set of user email addresses instead of an entire email domain.
 - Creates and enables the Cloudflare Access **App Launcher**.
+- Optionally adds a **Clientless Web Isolation (RBI)** bookmark tile to the App Launcher.
 - Deploys a clientless Cloudflare Worker application and maps its custom hostname.
 - Protects the clientless application with Access and publishes it in the App Launcher.
 - Registers an approved, read-only **MCP server** and creates its MCP Portal.
@@ -108,6 +109,7 @@ Do not create the Entra identity provider, MCP Portal, server registration, Acce
 | `identity.tf` / `mcp-access.tf` | Microsoft Entra ID identity provider, exact-email allow policy, portal Access app, and per-server Access apps restricted to that IdP. |
 | `gateway-domain-block.tf` / `files/blocked-domains.txt` | Reusable DOMAIN list plus DNS and HTTP Gateway block policies. The example blocks `777.com`, `www2.pnwx.com`, and their subdomains. |
 | `clientless-app.tf` / `worker/clientless-demo.js` | Worker-backed clientless web application at the configured `clientless_app_hostname`, protected by Access and displayed in the App Launcher. |
+| `rbi-bookmark.tf` | Optional Clientless Web Isolation application, exact-email permission policy, and App Launcher bookmark. The account-level Clientless Browser Isolation setting must already be enabled. |
 | `ai-gateway.tf` | AI Gateway with logs, bounded retries, request DLP blocking, and privacy Guardrails. |
 | `variables.tf` / `terraform.tfvars.example` | Declared settings and sanitized copyable input template. |
 | `outputs.tf` | Intended portal URL and requested server IDs; **not** connectivity or enforcement evidence. |
@@ -143,6 +145,9 @@ The catalog includes the reviewed Cloudflare Documentation server enabled for th
 | `entra_idp_name` | Optional Access identity-provider display name; default `Microsoft Entra ID`. |
 | `portal_name` | Optional display name; default `MCP Tool Demo`. |
 | `access_session_duration` | Optional session lifetime; default `8h`. |
+| `rbi_bookmark_name` | Optional App Launcher tile name; default `Remote Browser`. |
+| `rbi_bookmark_url` | Optional full RBI URL, such as `https://<team-name>.cloudflareaccess.com/browser/https://example.com`; empty disables the bookmark. Requires the Browser Isolation add-on. Obtain the exact team name from Zero Trust rather than inferring it. |
+| `access_team_name` | Required with `rbi_bookmark_url`; the Zero Trust team name used for the clientless `/browser` application. |
 
 For this demo, set the scoped `cloudflare_api_token` in the ignored `terraform.tfvars` alongside the matching account and zone IDs. The shell `CLOUDFLARE_API_TOKEN` option remains available if you leave that tfvars field empty; do not paste a token into a README, command line, or tracked file.
 

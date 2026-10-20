@@ -15,3 +15,11 @@ entra_client_id     = ""
 entra_client_secret = ""
 entra_directory_id  = ""
 # entra_idp_name    = "Microsoft Entra ID"
+
+# Optional Clientless Web Isolation (RBI) tile in the Access App Launcher.
+# Requires the Browser Isolation add-on. Obtain the exact team name from the
+# Zero Trust dashboard; leave the URL empty to skip this resource.
+access_team_name       = ""
+rbi_bookmark_name      = "Remote Browser"
+rbi_bookmark_url       = ""
+# Example: "https://<team-name>.cloudflareaccess.com/browser/https://example.com"

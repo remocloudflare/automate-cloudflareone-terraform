@@ -8,6 +8,11 @@ output "clientless_app_url" {
   value       = local.deploy_ready ? "https://${var.clientless_app_hostname}" : null
 }
 
+output "rbi_bookmark_url" {
+  description = "Optional Clientless Web Isolation URL published in the Access App Launcher."
+  value       = local.deploy_ready && var.rbi_bookmark_url != "" ? var.rbi_bookmark_url : null
+}
+
 output "ai_gateway_endpoint" {
   description = "Workers AI OpenAI-compatible endpoint routed through the Terraform-managed AI Gateway."
   value       = local.deploy_ready ? "https://gateway.ai.cloudflare.com/v1/${var.account_id}/${var.ai_gateway_id}/workers-ai/v1" : null
