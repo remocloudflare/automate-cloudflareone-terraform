@@ -95,6 +95,39 @@ variable "access_session_duration" {
   default     = "8h"
 }
 
+variable "rbi_bookmark_name" {
+  description = "App Launcher tile name for the optional Clientless Web Isolation (RBI) bookmark."
+  type        = string
+  default     = "Remote Browser"
+
+  validation {
+    condition     = length(trimspace(var.rbi_bookmark_name)) > 0
+    error_message = "rbi_bookmark_name cannot be empty."
+  }
+}
+
+variable "access_team_name" {
+  description = "Cloudflare Zero Trust team name used by the clientless Browser Isolation endpoint."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.access_team_name == "" || can(regex("^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$", var.access_team_name))
+    error_message = "access_team_name must be empty or a lowercase Cloudflare Zero Trust team name."
+  }
+}
+
+variable "rbi_bookmark_url" {
+  description = "Optional HTTPS bookmark URL shown in the Access App Launcher. Leave empty to skip it. Use a clientless /browser/ URL only when that endpoint is enabled for the Zero Trust organization."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.rbi_bookmark_url == "" || can(regex("^https://[^[:space:]]+$", var.rbi_bookmark_url))
+    error_message = "rbi_bookmark_url must be empty or a full HTTPS URL."
+  }
+}
+
 variable "entra_client_id" {
   description = "Application/client ID for the Microsoft Entra app registration."
   type        = string
