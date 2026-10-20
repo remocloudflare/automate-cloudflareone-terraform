@@ -95,6 +95,18 @@ variable "access_session_duration" {
   default     = "8h"
 }
 
+variable "allowed_user_emails_file" {
+  description = "Path relative to this module containing exact Access identities. Use an ignored *.local.txt file for live deployments."
+  type        = string
+  default     = "files/allowed-user-emails.txt"
+}
+
+variable "egress_emails_file" {
+  description = "Path relative to this module containing Gateway egress identities. Use an ignored *.local.txt file for live deployments."
+  type        = string
+  default     = "files/egress-emails.txt"
+}
+
 variable "rbi_bookmark_name" {
   description = "App Launcher tile name for the optional Clientless Web Isolation (RBI) bookmark."
   type        = string

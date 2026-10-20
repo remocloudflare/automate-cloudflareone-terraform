@@ -9,7 +9,7 @@ locals {
     for id, server in local.catalog_by_id : id => server if server.enabled
   }
   allowed_user_emails = toset([
-    for line in split("\n", file("${path.module}/files/allowed-user-emails.txt")) : trimspace(line)
+    for line in split("\n", file("${path.module}/${var.allowed_user_emails_file}")) : trimspace(line)
     if trimspace(line) != "" && !startswith(trimspace(line), "#")
   ])
   deploy_ready = (
@@ -48,7 +48,7 @@ check "allowed_user_emails" {
     condition = length(local.allowed_user_emails) > 0 && alltrue([
       for email in local.allowed_user_emails : can(regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", email))
     ])
-    error_message = "files/allowed-user-emails.txt must contain at least one valid email address, one per line."
+    error_message = "The configured allowed_user_emails_file must contain at least one valid email address, one per line."
   }
 }
 
@@ -61,7 +61,7 @@ resource "terraform_data" "deployment_gate" {
   lifecycle {
     precondition {
       condition     = local.deploy_ready
-      error_message = "To enable deployment, set account_id, zone_id, portal_hostname, clientless_app_hostname, portal_id, at least one valid email in files/allowed-user-emails.txt, and at least one enabled MCP server."
+      error_message = "To enable deployment, set account_id, zone_id, portal_hostname, clientless_app_hostname, portal_id, at least one valid email in allowed_user_emails_file, and at least one enabled MCP server."
     }
   }
 }

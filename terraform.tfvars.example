@@ -8,6 +8,8 @@ cloudflare_api_token = ""
 account_id         = ""
 zone_id            = ""
 ai_gateway_id      = "terraform-cloudflare-one-demo"
+allowed_user_emails_file = "files/allowed-user-emails.local.txt"
+egress_emails_file       = "files/egress-emails.local.txt"
 # Microsoft Entra ID app registration used by the Access applications.
 # Keep the real secret only in ignored terraform.tfvars or inject it as
 # TF_VAR_entra_client_secret from a secret manager.
