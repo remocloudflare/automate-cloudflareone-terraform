@@ -13,5 +13,4 @@ files/*.local.txt
 # Local editable diagram sources; publish PNG previews only
 *.drawio
 
-# Local-only verification suite
-tests/
+# Verification suite is published with the Terraform module.
