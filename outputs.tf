@@ -18,6 +18,11 @@ output "ai_gateway_endpoint" {
   value       = local.deploy_ready ? "https://gateway.ai.cloudflare.com/v1/${var.account_id}/${var.ai_gateway_id}/workers-ai/v1" : null
 }
 
+output "corporate_ai_chat_url" {
+  description = "Access-protected corporate AI chat URL."
+  value       = local.deploy_ready && var.corporate_ai_chat_hostname != "" ? "https://${var.corporate_ai_chat_hostname}" : null
+}
+
 output "active_server_ids" {
   description = "Stable IDs of servers requested in the portal. Not proof of sync or access."
   value       = local.deploy_ready ? sort(keys(local.active_mcp_servers)) : []

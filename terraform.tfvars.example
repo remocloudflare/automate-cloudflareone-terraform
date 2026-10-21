@@ -8,6 +8,8 @@ cloudflare_api_token = ""
 account_id         = ""
 zone_id            = ""
 ai_gateway_id      = "terraform-cloudflare-one-demo"
+corporate_ai_chat_hostname = "chat.example.com"
+workers_ai_model           = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 allowed_user_emails_file = "files/allowed-user-emails.local.txt"
 egress_emails_file       = "files/egress-emails.local.txt"
 # Microsoft Entra ID app registration used by the Access applications.

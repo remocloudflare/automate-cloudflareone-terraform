@@ -60,6 +60,22 @@ variable "ai_gateway_id" {
   }
 }
 
+variable "corporate_ai_chat_hostname" {
+  description = "Public hostname for the Access-protected corporate AI chat. Leave empty to skip it."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.corporate_ai_chat_hostname == "" || can(regex("^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$", var.corporate_ai_chat_hostname))
+    error_message = "corporate_ai_chat_hostname must be empty or a lowercase FQDN."
+  }
+}
+
+variable "workers_ai_model" {
+  description = "Workers AI model used by the corporate chat through AI Gateway."
+  type        = string
+  default     = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+}
 
 variable "enable_mcp_portal" {
   description = "Create the MCP portal and its supporting resources."
