@@ -11,8 +11,8 @@ resource "cloudflare_workers_script" "corporate_ai_chat" {
   ]
 
   migrations = {
-    old_tag = "v1"
-    new_tag = "v2"
+    new_tag            = "v1"
+    new_sqlite_classes = ["GlobalRateLimiter"]
   }
 
   bindings = [
