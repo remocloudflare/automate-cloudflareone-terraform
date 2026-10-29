@@ -8,6 +8,12 @@ cloudflare_api_token = ""
 account_id         = ""
 zone_id            = ""
 ai_gateway_id      = "terraform-cloudflare-one-demo"
+
+# OPTIONAL. Leave empty -- the Worker falls back to cloudflare_api_token for the
+# cf-aig-authorization header, which a live gateway with authentication = true
+# accepts. Set only if you mint a dedicated gateway token and prefer to scope
+# gateway access separately (AI > AI Gateway > <gateway> > Settings > Authentication).
+ai_gateway_token   = ""
 corporate_ai_chat_hostname = "chat.example.com"
 workers_ai_model           = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 allowed_user_emails_file = "files/allowed-user-emails.local.txt"
@@ -27,3 +33,12 @@ access_team_name       = ""
 rbi_bookmark_name      = "Remote Browser"
 rbi_bookmark_url       = ""
 # Example: "https://<team-name>.cloudflareaccess.com/browser/https://example.com"
+
+# Tokens for catalog rows with auth_type = "bearer", keyed by server id.
+# Workers Observability: create a dedicated API token with Account > Account
+# Settings: Read and Workers > Metadata Read-Only (Workers Observability Read),
+# scoped to this account only. Never reuse the Terraform deploy token.
+# Leave empty to reuse cloudflare_api_token (it then also needs User > User Details: Read).
+mcp_bearer_tokens = {
+  # "cloudflare-workers-observability" = "<read-only token>"
+}

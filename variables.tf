@@ -5,6 +5,20 @@ variable "cloudflare_api_token" {
   default     = ""
 }
 
+variable "ai_gateway_token" {
+  description = <<-EOT
+    OPTIONAL override for the cf-aig-authorization header. Leave empty: the
+    Worker then falls back to cloudflare_api_token, which a live test confirmed
+    is accepted by a gateway running authentication = true (a bogus token gets
+    401 AiGatewayError 2009). Set this only if you mint a dedicated token under
+    AI > AI Gateway > <gateway> > Settings > Authentication and prefer to scope
+    gateway access separately from the account API token. Never commit a real token.
+  EOT
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "account_id" {
   description = "Disposable demo Cloudflare account ID (never a customer account)."
   type        = string
@@ -109,6 +123,13 @@ variable "access_session_duration" {
   description = "Access session lifetime for the demo policy and MCP applications."
   type        = string
   default     = "8h"
+}
+
+variable "mcp_bearer_tokens" {
+  description = "Optional per-server upstream token overrides keyed by MCP server id, for auth_type = \"bearer\" rows. Empty uses cloudflare_api_token. Set only in the ignored terraform.tfvars."
+  type        = map(string)
+  default     = {}
+  sensitive   = true
 }
 
 variable "allowed_user_emails_file" {

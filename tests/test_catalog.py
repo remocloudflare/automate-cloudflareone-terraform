@@ -10,14 +10,36 @@ ROOT = Path(__file__).resolve().parents[1]
 class CatalogTests(unittest.TestCase):
     def test_catalog_contains_enabled_cloudflare_docs_example(self):
         rows = json.loads((ROOT / "files/mcp-servers.json").read_text())
-        self.assertEqual(rows, [{
+        self.assertEqual(rows[0], {
             "id": "cloudflare-docs",
             "name": "Cloudflare Documentation",
             "url": "https://docs.mcp.cloudflare.com/mcp",
             "auth_type": "unauthenticated",
             "enabled": True,
-        }])
+        })
         self.assertTrue(any(row["enabled"] for row in rows))
+
+    def test_account_server_uses_per_user_oauth_and_bearer_support_stays_wired(self):
+        rows = {r["id"]: r for r in json.loads((ROOT / "files/mcp-servers.json").read_text())}
+        obs = rows["cloudflare-workers-observability"]
+        self.assertEqual(obs["url"], "https://observability.mcp.cloudflare.com/mcp")
+        self.assertEqual(obs["auth_type"], "oauth")
+        self.assertIs(obs["on_behalf"], True)
+        mcp = (ROOT / "mcp.tf").read_text()
+        variables = (ROOT / "variables.tf").read_text()
+        example = (ROOT / "terraform.tfvars.example").read_text()
+        self.assertIn("local.mcp_bearer_token_by_id[each.key]", mcp)
+        self.assertRegex(variables, r'variable "mcp_bearer_tokens"[\s\S]*?sensitive\s*=\s*true')
+        self.assertIn("mcp_bearer_tokens", example)
+        # The example may show a placeholder, but never a real-looking token.
+        self.assertNotRegex(example, r'"cloudflare-workers-observability"\s*=\s*"(?!<)[^"]+"')
+        # Never the full Cloudflare API server, which can change account state.
+        self.assertNotIn("https://mcp.cloudflare.com/mcp", [r["url"] for r in rows.values()])
+        for row in rows.values():
+            if row["auth_type"] == "unauthenticated":
+                self.assertFalse(row.get("on_behalf", False))
+        hcl = (ROOT / "mcp.tf").read_text()
+        self.assertIn("on_behalf        = try(local.deployed_mcp_servers[id].on_behalf, false)", hcl)
 
     def test_catalog_keys_servers_and_access_apps_by_stable_id(self):
         hcl = (ROOT / "mcp.tf").read_text()
