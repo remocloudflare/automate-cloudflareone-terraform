@@ -6,6 +6,8 @@ resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "catalog" {
   name       = each.value.name
   hostname   = each.value.url
   auth_type  = each.value.auth_type
+  # Static read-only token for bearer upstreams; never stored in tracked files.
+  auth_credentials = each.value.auth_type == "bearer" ? local.mcp_bearer_token_by_id[each.key] : null
 
   depends_on = [terraform_data.deployment_gate]
 
@@ -27,7 +29,7 @@ resource "cloudflare_zero_trust_access_ai_controls_mcp_portal" "demo" {
     for id in sort(keys(local.deployed_mcp_servers)) : {
       server_id        = cloudflare_zero_trust_access_ai_controls_mcp_server.catalog[id].id
       default_disabled = false
-      on_behalf        = false
+      on_behalf        = try(local.deployed_mcp_servers[id].on_behalf, false)
     }
   ]
 

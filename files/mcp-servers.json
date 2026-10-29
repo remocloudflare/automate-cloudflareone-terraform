@@ -5,5 +5,13 @@
     "url": "https://docs.mcp.cloudflare.com/mcp",
     "auth_type": "unauthenticated",
     "enabled": true
+  },
+  {
+    "id": "cloudflare-workers-observability",
+    "name": "Cloudflare Workers Observability",
+    "url": "https://observability.mcp.cloudflare.com/mcp",
+    "auth_type": "oauth",
+    "on_behalf": true,
+    "enabled": true
   }
 ]

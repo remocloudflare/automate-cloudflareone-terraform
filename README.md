@@ -12,8 +12,8 @@
 | What does it create when explicitly enabled? | MCP portal/server controls, Entra and One-time PIN identity, explicit-email Access, an App Launcher and clientless Worker app, reusable Gateway DNS/HTTP domain blocking, reusable Gateway destination-IP blocking, and an AI Gateway with logging, retries, DLP, and Guardrails. |
 | What does it cost? | The clientless Worker can run within the Workers Free plan limits (currently 100,000 requests per day). AI Gateway itself is currently free on all plans, including its core features and DLP scanning; model inference and Guardrails can still incur Workers AI usage charges. Zero Trust is licensed separately; confirm the target account includes the required Access, Gateway, MCP Portal, and Zero Trust DLP entitlements. |
 | What is the client endpoint? | `https://<portal_hostname>/mcp` after a successful, verified deployment. |
-| What upstreams are supported here? | Approved **public HTTPS MCP servers with `auth_type = "unauthenticated"`**. The portal and its Access apps do not make a public upstream's direct URL private. |
-| What is not included? | No private or OAuth-backed MCP upstream and no Microsoft-side Entra app registration. Terraform configures Cloudflare's Entra integration; the external Microsoft callback registration remains separate. |
+| What upstreams are supported here? | Approved **public HTTPS MCP servers** with `auth_type = "unauthenticated"`, or `auth_type = "bearer"` with a read-only token from `mcp_bearer_tokens` in the ignored tfvars, or `auth_type = "oauth"` with `on_behalf = true` (each user signs in to the upstream with their own account). The portal and its Access apps do not make a public upstream's direct URL private. |
+| What is not included? | No private MCP upstream, no shared admin-credential OAuth upstream, and no Microsoft-side Entra app registration. Terraform configures Cloudflare's Entra integration; the external Microsoft callback registration remains separate. |
 | What proves the demo? | A real read-only tool response correlated with an Access tool-request log **and** a fresh post-apply plan that shows no changes. Neither proof substitutes for the other. |
 
 ## What this Terraform demo creates
@@ -89,7 +89,7 @@ This token authorizes **Terraform to configure the Cloudflare account**. It is s
 | Account and zone | In the Cloudflare dashboard, select the intended demo account; copy its **Account ID**. Under **Websites**, select the active zone for the portal hostname and copy its **Zone ID**. Confirm the hostname is inside that zone and the zone is using a [full or partial Cloudflare setup](https://developers.cloudflare.com/cloudflare-one/access-controls/ai-controls/mcp-portals/#prerequisites). | Inputs `account_id`, `zone_id`, and `portal_hostname`; Terraform does not create the account or zone. |
 | Zero Trust login | Configure the Entra app registration redirect URI as `https://<team-name>.cloudflareaccess.com/cdn-cgi/access/callback`, then supply its client ID, client secret, and directory ID. Add each exact authorized test-user identity to the ignored path selected by `allowed_user_emails_file`, one per line. After deployment, [test the login method](https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/#test-idps-in-cloudflare-one). | Creates Entra ID and One-time PIN identity providers, an explicit multi-email Access policy, and the App Launcher, clientless, portal, and server Access apps. It does not create the Entra app registration, secret, tenant, or users. |
 | Dedicated portal hostname | In the intended zone's DNS records, check that `portal_hostname` does not already have an A/AAAA/CNAME record or an existing Access app/portal owned elsewhere. Reserve a new hostname; do **not** create the CNAME manually, because this stack creates the proxied CNAME to `gateway.agents.cloudflare.com`. Confirm TLS coverage for the selected hostname before using it with a client. | Creates the portal, Access app, and proxied CNAME. Existing objects require an explicit adoption/reconciliation plan, not a duplicate apply. |
-| Approved upstream | Review `files/mcp-servers.json`. The included [Cloudflare Documentation MCP URL](https://developers.cloudflare.com/agents/model-context-protocol/cloudflare/servers-for-cloudflare/) is enabled as the reviewed, read-only server for this dedicated demo. Replace or disable it only through an intentional catalog change. This module only supports `auth_type = "unauthenticated"`; Access on the portal does **not** secure the upstream's direct URL. | Registers only enabled catalog rows; it does not deploy or harden the upstream. |
+| Approved upstream | Review `files/mcp-servers.json`. The included [Cloudflare Documentation MCP URL](https://developers.cloudflare.com/agents/model-context-protocol/cloudflare/servers-for-cloudflare/) is enabled as the reviewed, read-only server for this dedicated demo. Replace or disable it only through an intentional catalog change. This module supports `auth_type = "unauthenticated"`, `auth_type = "bearer"` (token from `mcp_bearer_tokens`), and per-user `auth_type = "oauth"` (`on_behalf = true`); Access on the portal does **not** secure the upstream's direct URL. | Registers only enabled catalog rows; it does not deploy or harden the upstream. |
 | Client and state | Prepare an OAuth-capable MCP client (the [OpenCode and Claude Code examples](#opencode-portal-only-and-optional-ai-gateway-model) are provided), verify Terraform uses a **separate state for this account/deployment**, and inventory any existing MCP portals, server IDs, Access apps/policies, and portal DNS names before planning. | No client model credentials, state backend, existing-object import, or cross-account migration is provisioned here. |
 
 Do not create the Entra identity provider, MCP Portal, server registration, Access policy/applications, or portal DNS record manually **and** then run an empty-state apply against the same objects. Finish the checks, fill the ignored tfvars, approve at least one upstream, and review the full Terraform plan before applying.
@@ -133,6 +133,7 @@ The catalog includes the reviewed Cloudflare Documentation server enabled for th
 | Input | Meaning |
 | --- | --- |
 | `cloudflare_api_token` | Scoped token in the gitignored tfvars (recommended); leave `""` only if using `CLOUDFLARE_API_TOKEN` from the Terraform shell. Match it to `account_id` and `zone_id`. |
+| `ai_gateway_token` | **Optional.** Override for the `cf-aig-authorization` header the chat Worker sends to the AI Gateway. Leave `""` — the Worker then reuses `cloudflare_api_token`, which a gateway running `authentication = true` accepts (an invalid token returns `401 AiGatewayError 2009`). Set it only if you mint a dedicated token under **AI → AI Gateway → _gateway_ → Settings → Authentication** and want gateway access scoped separately from the account API token. |
 | `account_id` | 32-hex-character Cloudflare account ID for the approved demo account. |
 | `zone_id` | 32-hex-character ID for the active zone containing the portal hostname. |
 | `portal_hostname` | Dedicated lowercase FQDN, **without** `https://` or `/mcp`. |
@@ -163,11 +164,29 @@ For this demo, set the scoped `cloudflare_api_token` in the ignored `terraform.t
     "url": "https://docs.mcp.cloudflare.com/mcp",
     "auth_type": "unauthenticated",
     "enabled": true
+  },
+  {
+    "id": "cloudflare-workers-observability",
+    "name": "Cloudflare Workers Observability",
+    "url": "https://observability.mcp.cloudflare.com/mcp",
+    "auth_type": "oauth",
+    "on_behalf": true,
+    "enabled": true
   }
 ]
 ```
 
-This is the **public documentation server**, not `https://mcp.cloudflare.com/mcp` (the Cloudflare API server, which requires separate OAuth or a bearer token and can expose account-changing operations). It is intentionally enabled as the reviewed, read-only upstream for this dedicated demo. Replace or disable it only through an intentional catalog change. The `auth_type = "unauthenticated"` entry refers to **upstream authentication**; users still sign in separately to the Access-protected portal. IDs must be unique, lowercase/hyphenated and stable; names cannot be blank. Only explicit booleans and `auth_type = "unauthenticated"` are accepted. The catalog check caps entries at 80. **Never enable a server merely to make a plan pass.**
+The second entry lets the portal answer account questions such as "how many Workers do I have" (`workers_list`, Worker details, and Workers logs/analytics). It ships as per-user OAuth (`auth_type = "oauth"`, `on_behalf = true`). After each fresh apply, open **Zero Trust → Access controls → MCP Portals → MCP servers → Cloudflare Workers Observability → Authenticate server** once; the server stays **Waiting** with 0 tools until then, and each portal user also authorizes with their own Cloudflare login. To avoid that click on every redeploy, switch the row to `auth_type = "bearer"` (remove `on_behalf`) and supply a token as below. Create a **dedicated read-only API token** for this account only with **Account > Account Settings: Read** and **Workers > Metadata Read-Only** (formerly Workers Observability Read), then set it in the ignored `terraform.tfvars`:
+
+```hcl
+mcp_bearer_tokens = {
+  "cloudflare-workers-observability" = "<read-only token>"
+}
+```
+
+By default the server reuses `cloudflare_api_token`; leave `mcp_bearer_tokens = {}` for that. A user token (`cfut_`) must then also have **User > User Details: Read**, because the Observability server verifies `/user` and `/accounts` and otherwise returns `403 insufficient_scope`; Client IP Address Filtering must be off. Every portal user who passes Access shares that token's view of this account, so keep the Access email list tight, or set a separate read-only override in `mcp_bearer_tokens`. Deployment is blocked until every enabled bearer server has a token.
+
+This is the **public documentation server**, not `https://mcp.cloudflare.com/mcp` (the Cloudflare API server, which requires separate OAuth or a bearer token and can expose account-changing operations). It is intentionally enabled as the reviewed, read-only upstream for this dedicated demo. Replace or disable it only through an intentional catalog change. The `auth_type = "unauthenticated"` entry refers to **upstream authentication**; users still sign in separately to the Access-protected portal. IDs must be unique, lowercase/hyphenated and stable; names cannot be blank. Only explicit booleans, `auth_type = "unauthenticated"` or `"bearer"` (no `on_behalf`), and `auth_type = "oauth"` with `on_behalf = true` are accepted. The catalog check caps entries at 80. **Never enable a server merely to make a plan pass.**
 
 **4. Plan and stop for review.** After every prerequisite is satisfied and at least one reviewed catalog row is enabled:
 
@@ -236,6 +255,24 @@ After an authorized apply, export the rendered file with `terraform output -raw 
 | Authentication | Configure an OAuth-capable MCP client with the deployed `portal_url` output (`https://<portal_hostname>/mcp`) and sign in as the exact allowed test user. | Successful client authentication. A raw browser/HTTP `401` with OAuth discovery metadata can be normal; it is not a tool call. |
 | Tool request | Invoke a real **read-only** tool through the portal; record its response and timestamp. | An actual result plus a matching Access tool-request log. Do not claim enforcement from dashboard configuration alone. |
 | Convergence | After the authorized apply, run a **new** `terraform plan -input=false` against the same state, account and inputs. | **No changes** for the managed scope. A no-change plan does not prove tool behavior or cover unmanaged dashboard resources. |
+| Per-user AI spend | Sign in to the Access-protected chat (`corporate_ai_chat_hostname`) as a real identity, send a prompt, then open **AI → AI Gateway → _gateway_ → Logs** and expand that request. | The log row shows cost and token counts with `metadata` = `{"user": "<signed-in email>", "app": "corporate-ai-chat"}`. A row with cost but **no** `metadata.user` is a caller that bypassed the Worker, not an attributed user. |
+
+### How per-user attribution actually works
+
+Spend is attributed by the **`cf-aig-metadata` header the Worker sends per request**, not by any
+dashboard setting. `worker/corporate-ai-chat.js` reads the `cf-access-authenticated-user-email`
+header that Cloudflare Access injects after login and forwards it to the gateway, so each log line
+carries the identity that caused the cost. Two consequences worth knowing:
+
+- Gateway **Authentication** (`authentication = true`) is a single shared token. It controls *whether*
+  a request is allowed, never *who* sent it — enabling it does not produce a per-user breakdown. Its
+  value here is that it blocks callers that would otherwise reach the gateway around the Worker and
+  appear as untagged spend.
+- Remove Access from in front of the Worker and the header disappears; every request then logs as
+  `user: "unknown"`.
+
+The gateway's **Access** tab is a different feature again: it requires a custom domain on the gateway
+and has no Terraform resource in the Cloudflare provider, so it is out of scope for this stack.
 
 The Cloudflare dashboard location is **Zero Trust → Access controls → MCP Portals**. Cloudflare's [portal documentation](https://developers.cloudflare.com/cloudflare-one/access-controls/ai-controls/mcp-portals/) describes the client authorization flow and Access request logging. If the client or upstream is unavailable, label that proof **not verified** rather than substituting a configured portal screenshot.
 
