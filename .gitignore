@@ -13,4 +13,8 @@ files/*.local.txt
 # Local editable diagram sources; publish PNG previews only
 *.drawio
 
-# Verification suite is published with the Terraform module.
+# Maintainer-only verification scripts and caches
+*.py
+.pytest_cache/
+__pycache__/
+*.py[cod]
